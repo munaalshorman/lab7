@@ -23,7 +23,8 @@ function locationHandler(request, response) {
 };
 
 function getLocation(city) {
-    let data = require('./data/geo.json');
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${city}&key=${process.env.GEOCODE_API_KEY}`
+    console.log(url);
     return new Location(city, data);
 }
 
