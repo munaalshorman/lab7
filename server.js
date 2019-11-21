@@ -54,7 +54,7 @@ function weatherHandler(request, response) {
 } 
   
   
-function getWeather(city) {
+function getWeather(query) {
     const url=`https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.longitude}`;
     return superagent.get(url)
    .then (data =>{
