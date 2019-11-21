@@ -1,31 +1,40 @@
 'use strict'
+
+//-----------------dependencies-------------------
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const PORT = process.env.PORT;
+const superagent=require('superagent');
+const PORT = process.env.PORT || 3000 ;
 const app = express();
-console.log(app);
 app.use(cors());
 
 
+//test
 app.get('/', (request, response) => {
     response.status(200).send("u did a great job");
     console.log(request);
 });
-//
+//----------------Functions-------------------------
 app.get('/location', locationHandler);
 app.get('/weather', weatherHandler);
 
+//----------------------------------------------------
+
 function locationHandler(request, response) {
-    console.log(request.query);
-    let locationData = getLocation(request.query.data);
-    response.status(200).json(locationData);
-};
+   
+    getLocation(request.query.data) //city from user
+    .then( locationData => response.status(200).json(locationData) );
+}
 
 function getLocation(city) {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${city}&key=${process.env.GEOCODE_API_KEY}`
-    console.log(url);
-    return new Location(city, data);
+    // console.log(url);
+    return superagent.get(url)
+    .then( data => {
+      return new Location(city, data.body);
+    })
+   
 }
 
 function Location(city, data) {
@@ -34,20 +43,28 @@ function Location(city, data) {
     this.latitude = data.results[0].geometry.location.lat;
     this.longitude = data.results[0].geometry.location.lng;
 }
+//---------------------------------------------------------
 
 // ---------------weather-----------------------------
 
 function weatherHandler(request, response) {
-    console.log(request.query);
-    let weatherData = getweather(request.query.data);
-    response.status(200).json(weatherData);
-};
+    getWeather(request.query.data)
+    .then( weatherData => response.status(200).json(weatherData) );
 
+} 
+  
+  
 function getWeather(city) {
-    let data = require('./data/darksky.json');
-    return data.daily.data.map((day) => {
-        return new Weather(day);
-    });
+    const url=`https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.longitude}`;
+    return superagent.get(url)
+   .then (data =>{
+       console.log(data.body);  //data from super agent exist in body
+       let weather = data.body;
+       return weather.daily.data.map( (day) => {
+         return new Weather(day);
+       });
+   });
+
 }
 
 function Weather(day) {
@@ -57,23 +74,7 @@ function Weather(day) {
 }
 
 
-
-
-
-// function weatherHandler(req, res) {
-//             let weatherData = getWeather(req.query.data);
-//             res.status(200).json(weatherData);
-//         }
-// function getWeather(city) {
-//             let data = require('./data/darksky.json');
-//             return data.daily.data.map((day) => {
-//                 return new Weather(day);
-//             })
-//         };
-
-
-
-
+//----------------------errors----------------------------
 app.get('/boo', (request, response) => {
     throw new Error('whoops');
 });
@@ -83,4 +84,7 @@ app.use('*', (request, response) => {
 app.use((error, request, response) => {
     response.status(500).send("error");
 });
-app.listen(PORT, () => console.log(`app listening on ${PORT}`));
+
+//-----------------------app listenning------------------
+
+app.listen(PORT, () => console.log(`App is listening on ${PORT}`) );
