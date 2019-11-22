@@ -4,8 +4,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
 const superagent = require('superagent');
 const PORT = process.env.PORT || 3000;
+
 const app = express();
 app.use(cors());
 
@@ -22,19 +24,25 @@ app.get('/events', eventHandler);
 
 //----------------------------------------------------
 
+//----------------------------------------------------
+
 function locationHandler(request, response) {
+
 
     getLocation(request.query.data) //city from user
         .then(locationData => response.status(200).json(locationData));
+
 }
 
 function getLocation(city) {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${city}&key=${process.env.GEOCODE_API_KEY}`
     // console.log(url);
     return superagent.get(url)
+
         .then(data => {
             return new Location(city, data.body);
         })
+
 
 }
 
@@ -50,9 +58,13 @@ function Location(city, data) {
 
 function weatherHandler(request, response) {
     getWeather(request.query.data)
-        .then(weatherData => response.status(200).json(weatherData));
 
-}
+    .then( weatherData => response.status(200).json(weatherData) );
+
+} 
+  
+
+
 
 
 function getWeather(query) {
@@ -84,10 +96,10 @@ function eventHandler(request,response) {
   
   function getEvent(query) {
     const url = `http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&location=${query.formatted_query}`;
-      console.log('url eventttttttttttttttttttttttttttttttttttttttttttt : \n\n\n\n\n\n', url );
+      console.log( url );
   
-      console.log('querrrrrrrrrrrrry : \n\n\n\n\n\n ', query );
-      // console.log('super agent urllllllllllll' ,superagent.get(url));
+      console.log('query', query );
+      // console.log('super agent url' ,superagent.get(url));
   
       return superagent.get(url)
       .then( data => {   
@@ -112,6 +124,7 @@ function eventHandler(request,response) {
 
 
 
+
 //----------------------errors----------------------------
 app.get('/boo', (request, response) => {
     throw new Error('whoops');
@@ -125,4 +138,6 @@ app.use((error, request, response) => {
 
 //-----------------------app listenning------------------
 
+
 app.listen(PORT, () => console.log(`App is listening on ${PORT}`));
+
