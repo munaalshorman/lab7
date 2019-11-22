@@ -4,8 +4,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const superagent=require('superagent');
-const PORT = process.env.PORT || 3000 ;
+const superagent = require('superagent');
+const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(cors());
 
@@ -18,23 +18,24 @@ app.get('/', (request, response) => {
 //----------------Functions-------------------------
 app.get('/location', locationHandler);
 app.get('/weather', weatherHandler);
+app.get('/events', eventHandler);
 
 //----------------------------------------------------
 
 function locationHandler(request, response) {
-   
+
     getLocation(request.query.data) //city from user
-    .then( locationData => response.status(200).json(locationData) );
+        .then(locationData => response.status(200).json(locationData));
 }
 
 function getLocation(city) {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${city}&key=${process.env.GEOCODE_API_KEY}`
     // console.log(url);
     return superagent.get(url)
-    .then( data => {
-      return new Location(city, data.body);
-    })
-   
+        .then(data => {
+            return new Location(city, data.body);
+        })
+
 }
 
 function Location(city, data) {
@@ -49,21 +50,21 @@ function Location(city, data) {
 
 function weatherHandler(request, response) {
     getWeather(request.query.data)
-    .then( weatherData => response.status(200).json(weatherData) );
+        .then(weatherData => response.status(200).json(weatherData));
 
-} 
-  
-  
+}
+
+
 function getWeather(query) {
-    const url=`https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.longitude}`;
+    const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.longitude}`;
     return superagent.get(url)
-   .then (data =>{
-       console.log(data.body);  //data from super agent exist in body
-       let weather = data.body;
-       return weather.daily.data.map( (day) => {
-         return new Weather(day);
-       });
-   });
+        .then(data => {
+            console.log(data.body);  //data from super agent exist in body
+            let weather = data.body;
+            return weather.daily.data.map((day) => {
+                return new Weather(day);
+            });
+        });
 
 }
 
@@ -72,6 +73,43 @@ function Weather(day) {
     this.time = new Date(day.time * 1000).toDateString();
 
 }
+//-------------------------events---------------
+
+
+function eventHandler(request,response) {
+    getEvent(request.query.data)
+      .then( eventData => response.status(200).json(eventData) );
+  
+  } // End of event handler function 
+  
+  function getEvent(query) {
+    const url = `http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&location=${query.formatted_query}`;
+      console.log('url eventttttttttttttttttttttttttttttttttttttttttttt : \n\n\n\n\n\n', url );
+  
+      console.log('querrrrrrrrrrrrry : \n\n\n\n\n\n ', query );
+      // console.log('super agent urllllllllllll' ,superagent.get(url));
+  
+      return superagent.get(url)
+      .then( data => {   
+        console.log('data 2 : ', data );   
+        const eventful = JSON.parse(data.text);
+        console.log('eventful ', eventful);
+        return eventful.events.event.map( (eventday) => {
+          console.log('eventday : ', eventday);
+          return new Eventful(eventday);
+        });
+      });
+  }// End of get eventful function 
+  
+  function Eventful(eventday) {
+  
+    this.link = eventday.url;
+    this.name = eventday.title;
+    this.event_date = eventday.start_time;
+    this.summary = eventday.description;
+  
+  }
+
 
 
 //----------------------errors----------------------------
@@ -87,4 +125,4 @@ app.use((error, request, response) => {
 
 //-----------------------app listenning------------------
 
-app.listen(PORT, () => console.log(`App is listening on ${PORT}`) );
+app.listen(PORT, () => console.log(`App is listening on ${PORT}`));
