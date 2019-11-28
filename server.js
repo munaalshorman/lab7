@@ -80,14 +80,14 @@ function eventHandler(request,response) {
     getEvent(request.query.data)
       .then( eventData => response.status(200).json(eventData) );
   
-  } // End of event handler function 
+  } 
   
   function getEvent(query) {
     const url = `http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&location=${query.formatted_query}`;
-      console.log('url eventttttttttttttttttttttttttttttttttttttttttttt : \n\n\n\n\n\n', url );
+      console.log('url event', url );
   
-      console.log('querrrrrrrrrrrrry : \n\n\n\n\n\n ', query );
-      // console.log('super agent urllllllllllll' ,superagent.get(url));
+      console.log('query : ', query );
+      // console.log('super agent url' ,superagent.get(url));
   
       return superagent.get(url)
       .then( data => {   
@@ -99,7 +99,7 @@ function eventHandler(request,response) {
           return new Eventful(eventday);
         });
       });
-  }// End of get eventful function 
+  } 
   
   function Eventful(eventday) {
   
